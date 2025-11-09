@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Neon Snake</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grid-overlay"></div>
+    <main class="container">
+      <header>
+        <h1>NEON SNAKE</h1>
+        <p class="subtitle">Tech-infused Snake &middot; WASD / Arrow Keys</p>
+      </header>
+
+      <section class="hud">
+        <div class="hud-card">
+          <span>Score</span>
+          <strong id="score">0</strong>
+        </div>
+        <div class="hud-card">
+          <span>Best</span>
+          <strong id="best-score">0</strong>
+        </div>
+        <div class="hud-card hud-card--status">
+          <span>Effect</span>
+          <strong id="core-status" data-state="idle">None</strong>
+        </div>
+        <div class="hud-actions">
+          <button id="reset-btn" class="glow-btn" type="button">Reset</button>
+          <button id="pause-btn" class="ghost-btn" type="button">Pause</button>
+        </div>
+      </section>
+
+      <div class="effect-legend">
+        <span>Legend:</span>
+        <span class="effect-tag buff-tag" tabindex="0">
+          Buff
+          <span class="effect-tooltip">
+            <span class="effect-line">
+              <span class="effect-dot dot-time"></span>Time Warp · slows time
+            </span>
+            <span class="effect-line">
+              <span class="effect-dot dot-flux"></span>Flux Drive · speed boost
+            </span>
+            <span class="effect-line">
+              <span class="effect-dot dot-phase"></span>Phase Shift · phase through walls
+            </span>
+          </span>
+        </span>
+        <span class="effect-tag debuff-tag" tabindex="0">
+          Debuff
+          <span class="effect-tooltip">
+            <span class="effect-line">
+              <span class="effect-dot dot-mirror"></span>Mirror Curse · inverted controls
+            </span>
+            <span class="effect-line">
+              <span class="effect-dot dot-gravity"></span>Gravity Lock · heavy slowdown
+            </span>
+          </span>
+        </span>
+        <span class="effect-tag pending-tag" tabindex="0">
+          Pickup Ready
+          <span class="effect-tooltip">
+            <span class="effect-line">
+              <span class="effect-dot dot-pending"></span>Pickup spawns on the grid · grab it!
+            </span>
+          </span>
+        </span>
+      </div>
+
+      <section class="game-wrapper">
+        <canvas id="board" width="480" height="480" aria-label="Neon Snake board"></canvas>
+        <div class="status-panel" id="status-panel" role="status" aria-live="polite">
+          <h2>Ready</h2>
+          <p>Press any direction or tap the board to launch</p>
+        </div>
+      </section>
+
+      <footer>
+        <p>
+          Tip: plan two moves ahead and own the rhythm.
+          <span class="hint">Chrono Cores slow time for a few seconds &mdash; grab them!</span>
+        </p>
+      </footer>
+    </main>
+
+    <script>
+      window.__neonSnakeReady = false;
+      window.addEventListener("load", () => {
+        if (window.__neonSnakeReady || window.__neonSnake) return;
+        fetch("app.js")
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error(`Failed to load app.js (${res.status})`);
+            }
+            return res.text();
+          })
+          .then((code) => {
+            new Function(`${code}\n//# sourceURL=fallback-app.js`)();
+          })
+          .catch((err) => console.error("Neon Snake bootstrap fallback error:", err));
+      });
+    </script>
+    <script src="app.js"></script>
+  </body>
+</html>
