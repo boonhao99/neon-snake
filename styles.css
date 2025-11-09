@@ -98,6 +98,56 @@ header h1 {
   color: #8ad8ff;
 }
 
+.touch-controls {
+  margin-top: 1.5rem;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.touch-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #9fbaff;
+  letter-spacing: 0.08em;
+}
+
+.touch-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.touch-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.touch-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(4, 8, 20, 0.65);
+  color: var(--text);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.1s ease, background 0.2s ease;
+  backdrop-filter: blur(6px);
+}
+
+.touch-btn:active {
+  transform: scale(0.96);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.touch-spacer {
+  width: 70px;
+}
+
 .effect-tag {
   padding: 0.2rem 0.75rem;
   border-radius: 999px;
@@ -368,5 +418,15 @@ footer {
 
   .subtitle {
     letter-spacing: 0.2em;
+  }
+
+  .touch-controls {
+    display: flex;
+  }
+
+  .touch-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 1.2rem;
   }
 }

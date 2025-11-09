@@ -6,6 +6,7 @@ const effectEl = document.getElementById("core-status");
 const statusPanel = document.getElementById("status-panel");
 const resetBtn = document.getElementById("reset-btn");
 const pauseBtn = document.getElementById("pause-btn");
+const touchButtons = document.querySelectorAll(".touch-btn");
 
 const GRID_SIZE = 24;
 const CELL = canvas.width / GRID_SIZE;
@@ -90,6 +91,24 @@ const state = {
   controlsInverted: false,
 };
 
+const directionVectors = {
+  up: { x: 0, y: -1 },
+  down: { x: 0, y: 1 },
+  left: { x: -1, y: 0 },
+  right: { x: 1, y: 0 },
+};
+
+const keyDirectionMap = {
+  ArrowUp: "up",
+  KeyW: "up",
+  ArrowDown: "down",
+  KeyS: "down",
+  ArrowLeft: "left",
+  KeyA: "left",
+  ArrowRight: "right",
+  KeyD: "right",
+};
+
 const AudioCtor = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 
@@ -122,6 +141,8 @@ const playBlip = () => {
 let lastTime = 0;
 let restartTimer = null;
 let pickupRespawnHandle = null;
+let swipePointerId = null;
+let swipeStart = null;
 
 const setStatus = (title, message) => {
   statusPanel.querySelector("h2").textContent = title;
@@ -279,6 +300,16 @@ function queueDirection({ x, y }) {
   state.queueDir.push({ x, y });
 }
 
+function submitDirection(vector) {
+  if (!vector) return;
+  let dir = vector;
+  if (state.controlsInverted) {
+    dir = { x: -vector.x, y: -vector.y };
+  }
+  queueDirection(dir);
+  startGame();
+}
+
 function handleKeydown(event) {
   if (event.code === "KeyP") {
     event.preventDefault();
@@ -286,25 +317,49 @@ function handleKeydown(event) {
     return;
   }
 
-  const keyMap = {
-    ArrowUp: { x: 0, y: -1 },
-    KeyW: { x: 0, y: -1 },
-    ArrowDown: { x: 0, y: 1 },
-    KeyS: { x: 0, y: 1 },
-    ArrowLeft: { x: -1, y: 0 },
-    KeyA: { x: -1, y: 0 },
-    ArrowRight: { x: 1, y: 0 },
-    KeyD: { x: 1, y: 0 },
-  };
-  let dir = keyMap[event.code];
-  if (!dir) return;
+  const directionName = keyDirectionMap[event.code];
+  if (!directionName) return;
   event.preventDefault();
-  if (state.controlsInverted) {
-    dir = { x: -dir.x, y: -dir.y };
-  }
-  queueDirection(dir);
-  startGame();
+  submitDirection(directionVectors[directionName]);
 }
+
+const handleTouchButton = (event) => {
+  event.preventDefault();
+  const dir = event.currentTarget?.dataset?.dir;
+  if (!dir) return;
+  submitDirection(directionVectors[dir]);
+};
+
+const handlePointerDown = (event) => {
+  if (event.pointerType === "touch") {
+    swipePointerId = event.pointerId;
+    swipeStart = { x: event.clientX, y: event.clientY };
+  }
+  startGame();
+};
+
+const handlePointerUp = (event) => {
+  if (event.pointerId !== swipePointerId || !swipeStart) return;
+  const dx = event.clientX - swipeStart.x;
+  const dy = event.clientY - swipeStart.y;
+  const absX = Math.abs(dx);
+  const absY = Math.abs(dy);
+  const threshold = 24;
+  if (absX > threshold || absY > threshold) {
+    if (absX > absY) {
+      submitDirection(directionVectors[dx > 0 ? "right" : "left"]);
+    } else {
+      submitDirection(directionVectors[dy > 0 ? "down" : "up"]);
+    }
+  }
+  swipePointerId = null;
+  swipeStart = null;
+};
+
+const cancelSwipe = () => {
+  swipePointerId = null;
+  swipeStart = null;
+};
 
 function applyPickupCollision(next) {
   if (!state.pickup) return;
@@ -474,9 +529,16 @@ function loop(timestamp) {
   }
 }
 
-const kickstart = () => startGame();
-["pointerdown", "mousedown", "touchstart"].forEach((evt) => {
-  canvas.addEventListener(evt, kickstart);
+canvas.addEventListener("pointerdown", handlePointerDown);
+canvas.addEventListener("pointerup", handlePointerUp);
+canvas.addEventListener("pointercancel", cancelSwipe);
+canvas.addEventListener("pointerleave", (event) => {
+  if (event.pointerId === swipePointerId) {
+    cancelSwipe();
+  }
+});
+touchButtons.forEach((btn) => {
+  btn.addEventListener("pointerdown", handleTouchButton);
 });
 resetBtn.addEventListener("click", () => {
   resetGame();
